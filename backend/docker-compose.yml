@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  # PostgreSQL 16 Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: coursehub-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: coursehub_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d coursehub_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # Spring Boot 3 Backend Application
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: coursehub-backend
+    restart: on-failure
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/coursehub_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgrespassword
+      JWT_SECRET: CourseHubSuperSecretKeyForJWTTokenSigningMustBe256BitsLong2024!
+      CORS_ALLOWED_ORIGINS: http://localhost:3000,http://localhost:5173
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres_data:
+    driver: local
