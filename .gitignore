@@ -1,0 +1,23 @@
+# Node & Vite dependencies / build
+node_modules/
+dist/
+dist-ssr/
+*.local
+*.tsbuildinfo
+
+# Java & Maven
+backend/target/
+backend/.mvn/wrapper/maven-wrapper.jar
+*.class
+
+# IDE & OS
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+Thumbs.db
+[Dd]esktop.ini
+.DS_Store
