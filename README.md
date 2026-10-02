@@ -2,9 +2,14 @@
 
 A full-stack, enterprise-grade online learning platform clone built with **React 18 + TypeScript + Tailwind CSS** on the frontend and **Spring Boot 3 + Java 21 + PostgreSQL** on the backend.
 
+> 📚 **Deep Architecture & Implementation Guides:**
+> - 🎨 **[Frontend In-Depth Guide (README_FRONTEND.md)](file:///c:/Users/91949/OneDrive/Desktop/Coursera_Clone/README_FRONTEND.md)** — File-by-file walkthrough of React 18, Zustand stores, Axios interceptors, shadcn/ui primitives, and routes.
+> - ⚙ **[Backend In-Depth Guide (README_BACKEND.md)](file:///c:/Users/91949/OneDrive/Desktop/Coursera_Clone/README_BACKEND.md)** — File-by-file walkthrough of Spring Boot 3, JWT security filter, JPA entities, Flyway migrations, and REST controllers.
+
 ---
 
 ## 📑 Table of Contents
+- [In-Depth Documentation](#-in-depth-documentation)
 - [Tech Stack](#-tech-stack)
 - [System Requirements](#-system-requirements)
 - [Architecture & Ports](#-architecture--ports)
