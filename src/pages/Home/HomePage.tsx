@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { Course, Testimonial } from '../../types';
 import * as coursesService from '../../services/courses.service';
 import { CourseCard } from '../../components/courses/CourseCard';
-import { Button } from '../../components/common/Button';
+import { Button } from '../../components/ui/button';
 import {
   Search,
   Sparkles,
