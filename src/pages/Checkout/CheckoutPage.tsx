@@ -37,12 +37,15 @@ export const CheckoutPage: React.FC = () => {
     setIsProcessing(true);
     // Simulate payment transaction
     setTimeout(async () => {
-      for (const item of items) {
-        await enroll(item.id);
+      try {
+        for (const item of items) {
+          await enroll(item.id);
+        }
+        clearCart();
+        setOrderComplete(true);
+      } finally {
+        setIsProcessing(false);
       }
-      clearCart();
-      setIsProcessing(false);
-      setOrderComplete(true);
     }, 800);
   };
 

@@ -4,7 +4,7 @@ import { Course, Lesson, EnrolledCourseProgress } from '../../types';
 import * as coursesService from '../../services/courses.service';
 import * as enrollmentService from '../../services/enrollments.service';
 import { useEnrollmentStore } from '../../store/enrollmentStore';
-import { Button } from '../../components/common/Button';
+import { Button } from '../../components/ui/button';
 import {
   ArrowLeft,
   CheckCircle2,

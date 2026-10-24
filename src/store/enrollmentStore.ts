@@ -33,7 +33,12 @@ export const useEnrollmentStore = create<EnrollmentState>((set, get) => ({
 
   enroll: async (courseId: string) => {
     useAuthStore.getState().enrollCourseInUser(courseId);
-    await enrollmentService.enrollInCourse(courseId);
+    try {
+      await enrollmentService.enrollInCourse(courseId);
+    } catch (err) {
+      // shortcut: optimistic client enrollment preserved if API sync fails
+      console.warn('Backend enrollment sync failed', err);
+    }
     await get().fetchEnrolledCourses();
   },
 
@@ -53,6 +58,6 @@ export const useEnrollmentStore = create<EnrollmentState>((set, get) => ({
 
   isEnrolled: (courseId: string) => {
     const user = useAuthStore.getState().user;
-    return user ? user.enrolledCourseIds.includes(courseId) : false;
+    return Boolean(user?.enrolledCourseIds?.includes(courseId));
   },
 }));

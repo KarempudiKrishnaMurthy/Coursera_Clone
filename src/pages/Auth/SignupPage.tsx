@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -13,7 +13,7 @@ import {
   CardDescription,
   CardContent,
 } from '../../components/ui/card';
-import { GraduationCap, Mail, Lock, User, Check, ArrowRight } from 'lucide-react';
+import { GraduationCap, Mail, Lock, User, Check, ArrowRight, AlertCircle } from 'lucide-react';
 
 const signupSchema = z
   .object({
@@ -32,6 +32,7 @@ type SignupFormData = z.infer<typeof signupSchema>;
 export const SignupPage: React.FC = () => {
   const navigate = useNavigate();
   const { signup, isLoading } = useAuthStore();
+  const [authError, setAuthError] = useState<string | null>(null);
 
   const {
     register,
@@ -48,11 +49,12 @@ export const SignupPage: React.FC = () => {
   });
 
   const onSubmit = async (data: SignupFormData) => {
+    setAuthError(null);
     try {
       await signup(data.name, data.email, data.password);
       navigate('/dashboard');
-    } catch (err) {
-      console.error(err);
+    } catch {
+      setAuthError('Registration failed. The email may already be registered.');
     }
   };
 
@@ -72,6 +74,13 @@ export const SignupPage: React.FC = () => {
         </CardHeader>
 
         <CardContent className="space-y-6 min-w-0">
+          {authError && (
+            <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-2 text-rose-700 text-xs sm:text-sm min-w-0">
+              <AlertCircle size={16} className="shrink-0" />
+              <span className="break-words min-w-0">{authError}</span>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 min-w-0">
             <div>
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
