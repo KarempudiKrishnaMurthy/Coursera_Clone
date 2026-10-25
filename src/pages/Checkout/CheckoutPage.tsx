@@ -30,7 +30,7 @@ export const CheckoutPage: React.FC = () => {
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isAuthenticated) {
-      navigate('/auth/login');
+      navigate('/auth/login', { state: { from: { pathname: '/checkout' } } });
       return;
     }
 

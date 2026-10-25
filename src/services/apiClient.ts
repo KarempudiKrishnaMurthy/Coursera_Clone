@@ -10,14 +10,26 @@ export const apiClient = axios.create({
   timeout: 15000,
 });
 
-// Getter and setter for in-memory access token to avoid circular dependency with Zustand store
-let inMemoryAccessToken: string | null = null;
+const TOKEN_KEY = 'coursehub_access_token';
+
+let inMemoryAccessToken: string | null =
+  typeof window !== 'undefined' ? localStorage.getItem(TOKEN_KEY) : null;
 
 export const setAccessToken = (token: string | null) => {
   inMemoryAccessToken = token;
+  if (typeof window !== 'undefined') {
+    if (token) {
+      localStorage.setItem(TOKEN_KEY, token);
+    } else {
+      localStorage.removeItem(TOKEN_KEY);
+    }
+  }
 };
 
 export const getAccessToken = (): string | null => {
+  if (!inMemoryAccessToken && typeof window !== 'undefined') {
+    inMemoryAccessToken = localStorage.getItem(TOKEN_KEY);
+  }
   return inMemoryAccessToken;
 };
 
