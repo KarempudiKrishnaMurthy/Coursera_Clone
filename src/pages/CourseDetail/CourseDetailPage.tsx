@@ -92,7 +92,7 @@ export const CourseDetailPage: React.FC = () => {
 
   const handleEnrollNow = async () => {
     if (!isAuthenticated) {
-      navigate('/auth/login');
+      navigate('/auth/login', { state: { from: { pathname: `/courses/${course.slug}` } } });
       return;
     }
     await enroll(course.id);

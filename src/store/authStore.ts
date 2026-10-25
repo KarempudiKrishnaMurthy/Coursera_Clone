@@ -1,6 +1,32 @@
 import { create } from 'zustand';
 import { User } from '../types';
 import * as authService from '../services/auth.service';
+import { setAccessToken } from '../services/apiClient';
+
+const USER_STORAGE_KEY = 'coursehub_auth_user';
+
+const getStoredUser = (): User | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(USER_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+const persistUser = (user: User | null) => {
+  if (typeof window === 'undefined') return;
+  try {
+    if (user) {
+      localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(user));
+    } else {
+      localStorage.removeItem(USER_STORAGE_KEY);
+    }
+  } catch (err) {
+    console.error('Failed to persist auth user', err);
+  }
+};
 
 interface AuthState {
   user: User | null;
@@ -15,22 +41,33 @@ interface AuthState {
   enrollCourseInUser: (courseId: string) => void;
 }
 
+const initialUser = getStoredUser();
+
 export const useAuthStore = create<AuthState>((set, get) => ({
-  user: null,
-  isAuthenticated: false,
+  user: initialUser,
+  isAuthenticated: !!initialUser,
   isLoading: false,
-  isInitialized: false,
+  isInitialized: !!initialUser,
 
   initAuth: async () => {
     try {
       const session = await authService.refreshSession();
       if (session && session.user) {
+        persistUser(session.user);
         set({ user: session.user, isAuthenticated: true, isInitialized: true });
         return;
       }
     } catch {
-      // No active refresh cookie
+      // Refresh network error or unauthenticated
     }
+
+    // Preserve local session if backend is offline or running standalone demo
+    const stored = getStoredUser();
+    if (stored) {
+      set({ user: stored, isAuthenticated: true, isInitialized: true });
+      return;
+    }
+
     set({ user: null, isAuthenticated: false, isInitialized: true });
   },
 
@@ -38,6 +75,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isLoading: true });
     try {
       const user = await authService.loginUser(email, password);
+      persistUser(user);
       set({ user, isAuthenticated: true, isLoading: false, isInitialized: true });
     } catch (err) {
       set({ isLoading: false });
@@ -49,6 +87,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isLoading: true });
     try {
       const user = await authService.signupUser(name, email, password);
+      persistUser(user);
       set({ user, isAuthenticated: true, isLoading: false, isInitialized: true });
     } catch (err) {
       set({ isLoading: false });
@@ -60,7 +99,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       await authService.logoutUser();
     } finally {
-      set({ user: null, isAuthenticated: false });
+      persistUser(null);
+      setAccessToken(null);
+      set({ user: null, isAuthenticated: false, isInitialized: true });
     }
   },
 
@@ -68,6 +109,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isLoading: true });
     try {
       const updated = await authService.updateUserProfile(updates);
+      persistUser(updated);
       set({ user: updated, isLoading: false });
     } catch (err) {
       set({ isLoading: false });
@@ -80,12 +122,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (!user) return;
     const currentEnrolled = user.enrolledCourseIds || [];
     if (!currentEnrolled.includes(courseId)) {
-      set({
-        user: {
-          ...user,
-          enrolledCourseIds: [...currentEnrolled, courseId],
-        },
-      });
+      const updated = {
+        ...user,
+        enrolledCourseIds: [...currentEnrolled, courseId],
+      };
+      persistUser(updated);
+      set({ user: updated });
     }
   },
 }));

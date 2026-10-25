@@ -1,7 +1,8 @@
 import React, { Suspense, lazy } from 'react';
-import { createBrowserRouter, Link } from 'react-router-dom';
+import { createBrowserRouter, Link, Navigate, useLocation } from 'react-router-dom';
 import { PageShell } from '../components/layout/PageShell';
 import { Button } from '../components/ui/button';
+import { useAuthStore } from '../store/authStore';
 
 // Lazy-loaded route components for optimal code-splitting and bundle performance
 const HomePage = lazy(() => import('../pages/Home/HomePage').then((m) => ({ default: m.HomePage })));
@@ -29,6 +30,39 @@ const withSuspense = (Component: React.ComponentType) => (
   </Suspense>
 );
 
+// Route guard requiring authenticated user session
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated, isInitialized } = useAuthStore();
+  const location = useLocation();
+
+  if (!isInitialized) {
+    return <PageLoadingFallback />;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/auth/login" state={{ from: location }} replace />;
+  }
+
+  return <>{children}</>;
+};
+
+// Route guard for guest-only pages (redirects logged-in users away from auth forms)
+const GuestRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated, isInitialized } = useAuthStore();
+  const location = useLocation();
+  const from = (location.state as { from?: { pathname?: string } })?.from?.pathname || '/dashboard';
+
+  if (!isInitialized) {
+    return <PageLoadingFallback />;
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to={from} replace />;
+  }
+
+  return <>{children}</>;
+};
+
 // 404 Fallback Page
 const NotFoundPage = () => (
   <div className="min-h-[70vh] flex items-center justify-center px-4 text-center w-full min-w-0">
@@ -53,18 +87,57 @@ export const router = createBrowserRouter([
       { index: true, element: withSuspense(HomePage) },
       { path: 'courses', element: withSuspense(CatalogPage) },
       { path: 'courses/:slug', element: withSuspense(CourseDetailPage) },
-      { path: 'dashboard', element: withSuspense(DashboardPage) },
-      { path: 'profile', element: withSuspense(ProfilePage) },
+      {
+        path: 'dashboard',
+        element: (
+          <ProtectedRoute>
+            {withSuspense(DashboardPage)}
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'profile',
+        element: (
+          <ProtectedRoute>
+            {withSuspense(ProfilePage)}
+          </ProtectedRoute>
+        ),
+      },
       { path: 'checkout', element: withSuspense(CheckoutPage) },
-      { path: 'auth/login', element: withSuspense(LoginPage) },
-      { path: 'auth/signup', element: withSuspense(SignupPage) },
-      { path: 'auth/forgot-password', element: withSuspense(ForgotPasswordPage) },
+      {
+        path: 'auth/login',
+        element: (
+          <GuestRoute>
+            {withSuspense(LoginPage)}
+          </GuestRoute>
+        ),
+      },
+      {
+        path: 'auth/signup',
+        element: (
+          <GuestRoute>
+            {withSuspense(SignupPage)}
+          </GuestRoute>
+        ),
+      },
+      {
+        path: 'auth/forgot-password',
+        element: (
+          <GuestRoute>
+            {withSuspense(ForgotPasswordPage)}
+          </GuestRoute>
+        ),
+      },
       { path: '*', element: <NotFoundPage /> },
     ],
   },
   {
     // Dedicated full-screen learning player route
     path: 'learn/:courseId',
-    element: withSuspense(LearningPlayerPage),
+    element: (
+      <ProtectedRoute>
+        {withSuspense(LearningPlayerPage)}
+      </ProtectedRoute>
+    ),
   },
 ]);

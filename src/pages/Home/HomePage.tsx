@@ -316,7 +316,7 @@ export const HomePage: React.FC = () => {
               size="lg"
               variant="outline"
               onClick={() => navigate('/courses?price=free')}
-              className="border-primary-300 text-white hover:bg-primary-600/40 active:bg-primary-600/60 font-semibold"
+              className="bg-transparent hover:bg-white/15 active:bg-white/25 border-white/70 hover:border-white text-white font-semibold"
             >
               Free Courses
             </Button>

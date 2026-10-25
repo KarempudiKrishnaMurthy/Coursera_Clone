@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -31,8 +31,17 @@ type SignupFormData = z.infer<typeof signupSchema>;
 
 export const SignupPage: React.FC = () => {
   const navigate = useNavigate();
-  const { signup, isLoading } = useAuthStore();
+  const location = useLocation();
+  const { signup, isLoading, isAuthenticated } = useAuthStore();
   const [authError, setAuthError] = useState<string | null>(null);
+
+  const from = (location.state as { from?: { pathname?: string } })?.from?.pathname || '/dashboard';
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, navigate, from]);
 
   const {
     register,
@@ -52,7 +61,7 @@ export const SignupPage: React.FC = () => {
     setAuthError(null);
     try {
       await signup(data.name, data.email, data.password);
-      navigate('/dashboard');
+      navigate(from, { replace: true });
     } catch {
       setAuthError('Registration failed. The email may already be registered.');
     }

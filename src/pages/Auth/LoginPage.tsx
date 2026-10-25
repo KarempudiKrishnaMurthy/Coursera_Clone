@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -24,8 +24,17 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { login, isLoading } = useAuthStore();
+  const location = useLocation();
+  const { login, isLoading, isAuthenticated } = useAuthStore();
   const [authError, setAuthError] = useState<string | null>(null);
+
+  const from = (location.state as { from?: { pathname?: string } })?.from?.pathname || '/dashboard';
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, navigate, from]);
 
   const {
     register,
@@ -43,7 +52,7 @@ export const LoginPage: React.FC = () => {
     setAuthError(null);
     try {
       await login(data.email, data.password);
-      navigate('/dashboard');
+      navigate(from, { replace: true });
     } catch {
       setAuthError('Invalid credentials. Please try again.');
     }
