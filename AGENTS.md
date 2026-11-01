@@ -21,3 +21,12 @@ Take the first option that fully works:
 - Never cut validation, error handling, security, or accessibility. Those are not extras.
 - Logic with a branch, a loop, a parser, money or security leaves one small test behind.
 - Mark a deliberate shortcut with a `shortcut:` comment that says when to revisit.
+
+## Frontend UI Engineering Review
+
+Before generating or modifying any UI code (React components, pages, styles, layouts), review and adhere to [.agents/skills/frontend-ui-engineering/SKILL.md](file:///c:/Users/91949/OneDrive/Desktop/Coursera_Clone/.agents/skills/frontend-ui-engineering/SKILL.md):
+- Prefer composition over configuration; keep components focused and under 200 lines.
+- Use project design system tokens and Tailwind scale; reject unbranded gradients and generic AI aesthetics.
+- Enforce WCAG 2.1 AA accessibility (visible labels, keyboard navigation, focus management, visible focus rings).
+- Explicitly handle all states: loading (skeletons), error, empty, and success states.
+- Mobile-first responsive layouts across breakpoints (320px, 768px, 1024px, 1440px).
